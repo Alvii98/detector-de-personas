@@ -12,13 +12,25 @@ import threading
 import pandas as pd # pandas y openpyxl
 import sqlite3
 import re
+import ctypes
+import sys
+
 # Crear entorno virtualenv -p python3 mientorno
-# PARA EXE: pyinstaller --onefile --windowed main2.py
+# PARA EXE: pyinstaller --onefile --windowed main.py
 # ejecutar para actualizar dependencias  pip install --upgrade setuptools
 class VentanaPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Contador de personas 2.1")
+
+        if self.is_admin():
+            print("El script se está ejecutando con privilegios de administrador.")
+        else:
+            script = os.path.abspath(__file__)
+            params = " ".join([script] + sys.argv[1:])
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable.replace("python.exe", "pythonw.exe"), params, None, 1)
+            sys.exit()  
+        
+        self.title("Contador de personas 2.2")
         self.ancho = 880
         self.alto = 580
         self.anchoVideo = 620
@@ -31,8 +43,8 @@ class VentanaPrincipal(tk.Tk):
         self.x = (self.winfo_screenwidth() // 2) - (self.ancho // 2)
         self.y = (self.winfo_screenheight() // 2) - (self.alto // 2) - 50
         self.geometry(f'{self.ancho}x{self.alto}+{self.x}+{self.y}')
-        # Cargar el archivo de imagen desde el disco
-        icono = tk.PhotoImage(file="img/ico.png")
+        icono = Image.open("img/ico.ico")
+        icono = ImageTk.PhotoImage(icono)
         # Establecerlo como ícono de la ventana
         self.iconphoto(True, icono)
 
@@ -53,6 +65,12 @@ class VentanaPrincipal(tk.Tk):
         threading.Thread(target=self.cargar_lib).start()
         self.update_clock()
         self.conn_bdd()
+
+    def is_admin(self):
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
 
     def detect_people(self,frame):
         height, width = frame.shape[:2]
@@ -183,7 +201,6 @@ class VentanaPrincipal(tk.Tk):
                 archivo = f"registros_{fecha}.xlsx"
                 df.to_excel(archivo, index=False)
                 os.startfile(archivo)
-                self.notificaciones(f'Exportado correctamente {archivo}','#35c82b')
         except Exception as e:
             self.notificaciones(f'Ocurrio un error al exportar: {e}', '#ff0000')
     
@@ -338,7 +355,7 @@ class VentanaPrincipal(tk.Tk):
         boton = tk.Button(self.frameBotRegistros, text="Buscar", cursor="hand2", bg="blue", fg="#fff8e6", command=self.registros)
         boton.grid(row=0, column=1, sticky="W", padx=5)
 
-        boton2 = tk.Button(self.frameBotRegistros, text="Eliminar registros", cursor="hand2", bg="red", fg="#fff8e6", command=self.borrar_registros)
+        boton2 = tk.Button(self.frameBotRegistros, text="Eliminar busqueda", cursor="hand2", bg="red", fg="#fff8e6", command=self.borrar_registros)
         boton2.grid(row=0, column=2, sticky="W", padx=5)
 
         self.tree = ttk.Treeview(self.frameRegistros, columns=("Fecha", "Lugar", "Imagen"), height=self.alto, show='headings')
@@ -485,7 +502,6 @@ class VentanaPrincipal(tk.Tk):
                     if self.insert == 0 or self.insert == 15: 
                         self.insert = 0
                         if self.detectar == 0:
-                            print('paso')
                             detections = self.detect_people(frame)
                             for (box, confidence) in detections:
                                 x, y, w, h = box
