@@ -22,13 +22,13 @@ class VentanaPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        # if self.is_admin():
-        #     print("El script se está ejecutando con privilegios de administrador.")
-        # else:
-        #     script = os.path.abspath(__file__)
-        #     params = " ".join([script] + sys.argv[1:])
-        #     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable.replace("python.exe", "pythonw.exe"), params, None, 1)
-        #     sys.exit()  
+        if self.is_admin():
+            print("El script se está ejecutando con privilegios de administrador.")
+        else:
+            script = os.path.abspath(__file__)
+            params = " ".join([script] + sys.argv[1:])
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable.replace("python.exe", "pythonw.exe"), params, None, 1)
+            sys.exit()  
         
         self.title("Contador de personas 2.2")
         self.ancho = 880
@@ -532,14 +532,19 @@ class VentanaPrincipal(tk.Tk):
                                         self.paso_linea2 = 0                    
                                         self.insertar_registro()
                                         self.count += 1
-
-                                if x < int(linea_deteccion2) < x + w:
+                                elif x < int(linea_deteccion2) < x + w:
                                     self.paso_linea2 = 1
                                     if self.paso_linea1 == 1:
                                         self.paso_linea1 = 0
                                         self.paso_linea2 = 0
                                         self.insertar_registro()
                                         self.count += 1
+                                
+                                if self.paso_linea1 == 0: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 0, 255), 2)
+                                else: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 255, 0), 2)
+
+                                if self.paso_linea2 == 0: cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 0, 255), 2)
+                                else: cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 255, 0), 2)
                             else:
                                 if y < int(linea_deteccion1) < y + h:
                                     self.paso_linea1 = 1
@@ -548,14 +553,19 @@ class VentanaPrincipal(tk.Tk):
                                         self.paso_linea2 = 0
                                         self.insertar_registro()
                                         self.count += 1
-                                if y < int(linea_deteccion2) < y + h:
+                                elif y < int(linea_deteccion2) < y + h:
                                     self.paso_linea2 = 1
                                     if self.paso_linea1 == 1:
                                         self.paso_linea1 = 0
                                         self.paso_linea2 = 0
                                         self.insertar_registro()
                                         self.count += 1
-                                
+                                if self.paso_linea1 == 0: cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 0, 255), 2)
+                                else: cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 255, 0), 2)
+
+                                if self.paso_linea2 == 0: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 0, 255), 2)
+                                else: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)
+
                     self.detectar += 1
                     if self.detectar == 10: self.detectar = 0
 
