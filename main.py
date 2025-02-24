@@ -465,27 +465,25 @@ class VentanaPrincipal(tk.Tk):
     def notificaciones(self,texto,color):
         if self.notificacion:
             self.notificacion = False
-        else:
-            self.notificacion = True
-            self.nueva_ventana.destroy()
-
-        self.nueva_ventana = tk.Toplevel()
-        self.nueva_ventana.title("Notificacion")
-        x = (self.winfo_screenwidth() // 2) - (600 // 2)
-        # y = (self.winfo_screenheight() // 2) - (40 // 2) - 100
-        y = int(self.winfo_screenheight() - (self.winfo_screenheight() * 0.20))
-        self.nueva_ventana.geometry(f'{600}x{40}+{x}+{y}')
-        self.notPrincipal = tk.Frame(self.nueva_ventana, bg=color)
-        self.notPrincipal.pack(side=tk.RIGHT, fill='both', expand=True)
-        self.lblNot = tk.Label(self.notPrincipal, text=texto, bg=color, fg="white", font=("Helvetica", 16))
-        self.lblNot.pack(side="top", pady=10)
-        threading.Thread(target=self.eliminarNotificacion).start()
+            self.nueva_ventana = tk.Toplevel()
+            self.nueva_ventana.title("Notificacion")
+            x = (self.winfo_screenwidth() // 2) - (600 // 2)
+            # y = (self.winfo_screenheight() // 2) - (40 // 2) - 100
+            y = int(self.winfo_screenheight() - (self.winfo_screenheight() * 0.20))
+            self.nueva_ventana.geometry(f'{600}x{40}+{x}+{y}')
+            self.notPrincipal = tk.Frame(self.nueva_ventana, bg=color)
+            self.notPrincipal.pack(side=tk.RIGHT, fill='both', expand=True)
+            self.lblNot = tk.Label(self.notPrincipal, text=texto, bg=color, fg="white", font=("Helvetica", 16))
+            self.lblNot.pack(side="top", pady=10)
+            threading.Thread(target=self.eliminarNotificacion).start()
 
     def limpiar_foto(self):
         self.img = ImageTk.PhotoImage(Image.open("img/imagen.png"))
         self.foto.config(image=self.img)
 
     def cerrar_video(self):
+        self.paso_linea1 = 0
+        self.paso_linea2 = 0
         if self.cargar_video != 0 and self.cargar_video != 1:
             self.cargar_video = 10
 
