@@ -15,20 +15,20 @@ import re
 import ctypes
 import sys
 
-# Crear entorno virtualenv -p python3 mientorno
+# Crear entorno virtualenv -p python3 mientorno / source mientorno/Scripts/activate
 # PARA EXE: pyinstaller --onefile --windowed main.py
 # ejecutar para actualizar dependencias  pip install --upgrade setuptools
 class VentanaPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        if self.is_admin():
-            print("El script se está ejecutando con privilegios de administrador.")
-        else:
-            script = os.path.abspath(__file__)
-            params = " ".join([script] + sys.argv[1:])
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable.replace("python.exe", "pythonw.exe"), params, None, 1)
-            sys.exit()  
+        # if self.is_admin():
+        #     print("El script se está ejecutando con privilegios de administrador.")
+        # else:
+        #     script = os.path.abspath(__file__)
+        #     params = " ".join([script] + sys.argv[1:])
+        #     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable.replace("python.exe", "pythonw.exe"), params, None, 1)
+        #     sys.exit()  
         
         self.title("Contador de personas 2.2")
         self.ancho = 880
@@ -60,8 +60,9 @@ class VentanaPrincipal(tk.Tk):
         self.net = None
         self.outs = None
         self.classes = None
-        self.insert = 0
         self.detectar = 0
+        self.paso_linea1 = 0
+        self.paso_linea2 = 0
         threading.Thread(target=self.cargar_lib).start()
         self.update_clock()
         self.conn_bdd()
@@ -133,14 +134,15 @@ class VentanaPrincipal(tk.Tk):
         )''')
         conn.commit()
 
-    def insertar_registro(self,archivo):
+    def insertar_registro(self):
         conn = sqlite3.connect('registros.db')
         cursor = conn.cursor()
-        
+        id = datetime.now().strftime('%Y%m%d%H%M%S')
+        path = f'img/log/{id}_foto.png'
         fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         cursor.execute('''INSERT INTO registros (fecha, local, archivo)
-        VALUES (?, ?, ?)''', (fecha, self.lugar.get(), archivo))
+        VALUES (?, ?, ?)''', (fecha, self.lugar.get(), path))
 
         conn.commit()
         conn.close()
@@ -358,28 +360,24 @@ class VentanaPrincipal(tk.Tk):
         boton2 = tk.Button(self.frameBotRegistros, text="Eliminar busqueda", cursor="hand2", bg="red", fg="#fff8e6", command=self.borrar_registros)
         boton2.grid(row=0, column=2, sticky="W", padx=5)
 
-        self.tree = ttk.Treeview(self.frameRegistros, columns=("Fecha", "Lugar", "Imagen"), height=self.alto, show='headings')
+        self.tree = ttk.Treeview(self.frameRegistros, columns=("Fecha", "Lugar"), height=self.alto, show='headings')
         self.tree.heading("Fecha", text="Fecha")
         self.tree.heading("Lugar", text="Lugar")
-        self.tree.heading("Imagen", text="Imagen")
+        # self.tree.heading("Imagen", text="Imagen")
 
         # Crear la Scrollbar vertical
         vsb = ttk.Scrollbar(self.frameRegistros, orient="vertical", command=self.tree.yview)
         vsb.pack(side='right', fill='y')
         self.tree.configure(yscrollcommand=vsb.set)
         self.tree.pack(side='left', fill=tk.BOTH, expand=True)
-        self.tree.bind("<Double-1>", self.open_image)
+        # self.tree.bind("<Double-1>", self.open_image)
 
         self.frameRegistros.pack_forget()
         
         self.frameDatos = tk.Frame(self.cuerpoPrincipal, bg="#fff8e6")
         self.frameDatos.pack(fill=tk.BOTH, pady=10)
-        
-        
-        self.lblLinea = tk.Label(self.frameDatos, text="Linea de detección:", bg="#fff8e6", fg="black", font=("Helvetica", 10))
-        self.lblLinea.pack(expand=True, anchor="center")
 
-                # Crear un estilo personalizado
+        # Crear un estilo personalizado
         style = ttk.Style()
         style.theme_use('default')
         # Configurar el estilo del Combobox
@@ -390,11 +388,31 @@ class VentanaPrincipal(tk.Tk):
                         selectbackground="#fff8e6", # Color de fondo de la selección
                         selectforeground="black")
 
+        self.frameLineaDatos = tk.Frame(self.frameDatos, bg="#fff8e6")
+        self.frameLineaDatos.pack(expand=True, anchor="center")
+
+        self.lblLinea = tk.Label(self.frameLineaDatos, text="Linea de detección 1:", bg="#fff8e6", fg="black", font=("Helvetica", 10))
+        self.lblLinea.grid(row=0, column=1, sticky="W", padx=10)
+
         vcmd = (self.register(self.validate_input), '%P')
-        self.linea = ttk.Combobox(self.frameDatos, width=33, style="TCombobox", validate='key', validatecommand=vcmd)
-        self.linea['values'] = ('10','50','100','150','200','250','300','350','400')
-        self.linea.current(4) 
-        self.linea.pack(expand=True, anchor="center", pady=10)
+        self.linea = ttk.Combobox(self.frameLineaDatos, width=33, style="TCombobox", validate='key', validatecommand=vcmd)
+        self.linea['values'] = ('10','50','100','150','200','250','300','350','400','450','500','550','600')
+        self.linea.current(1) 
+        self.linea.grid(row=1, column=1, sticky="W", padx=10)
+
+        self.lblLinea = tk.Label(self.frameLineaDatos, text="Linea de detección 2:", bg="#fff8e6", fg="black", font=("Helvetica", 10))
+        self.lblLinea.grid(row=0, column=2, sticky="W", padx=10)
+        
+        vcmd = (self.register(self.validate_input), '%P')
+        self.linea2 = ttk.Combobox(self.frameLineaDatos, width=33, style="TCombobox", validate='key', validatecommand=vcmd)
+        self.linea2['values'] = ('10','50','100','150','200','250','300','350','400','450','500','550','600')
+        self.linea2.current(9)
+        self.linea2.grid(row=1, column=2, sticky="W", padx=10)
+
+        self.lineaPos = ttk.Combobox(self.frameDatos, width=33, style="TCombobox")
+        self.lineaPos['values'] = ('Horizontal','Vertical')
+        self.lineaPos.current(0) 
+        self.lineaPos.pack(expand=True, anchor="center", pady=5)
 
         self.frameBotDatos = tk.Frame(self.frameDatos, bg="#fff8e6")
         self.frameBotDatos.pack(expand=True, anchor="center")
@@ -496,30 +514,65 @@ class VentanaPrincipal(tk.Tk):
                 try:
                     self.botonVideo.configure(state="disabled")
                     
-                    if self.linea.get() == 0 or self.linea.get() == '': linea_deteccion = '200'
-                    else: linea_deteccion = self.linea.get()
+                    if self.linea.get() == 0 or self.linea.get() == '': linea_deteccion1 = '50'
+                    else: linea_deteccion1 = self.linea.get()
+
+                    if self.linea2.get() == 0 or self.linea2.get() == '': linea_deteccion2 = '400'
+                    else: linea_deteccion2 = self.linea2.get()
+
                     if self.fecha_hora == '': self.fecha_hora = datetime.now().strftime('%d/%m/%Y %H:%M')
-                    if self.insert == 0 or self.insert == 15: 
-                        self.insert = 0
-                        if self.detectar == 0:
-                            detections = self.detect_people(frame)
-                            for (box, confidence) in detections:
-                                x, y, w, h = box
-                                # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                                if y < int(linea_deteccion) < y + h:
-                                    id = datetime.now().strftime('%Y%m%d%H%M%S')
-                                    path = f'img/log/{id}_foto.png'
-                                    if not os.path.exists(os.path.dirname(path)): os.makedirs(os.path.dirname(path))
-                                    cv2.imwrite(path, cv2.resize(frame, (self.anchoVideo, self.altoVideo)))
-                                    self.insertar_registro(path)
-                                    self.insert = 1
-                                    self.count += 1
-                        self.detectar += 1
-                        if self.detectar == 10: self.detectar = 0
-                        cv2.line(frame, (0, int(linea_deteccion)), (frame.shape[1], int(linea_deteccion)), (0, 0, 255), 2)
-                    else:    
-                        self.insert += 1
-                        cv2.line(frame, (0, int(linea_deteccion)), (frame.shape[1], int(linea_deteccion)), (0, 255, 0), 2)
+
+                    if self.detectar == 0:
+                        detections = self.detect_people(frame)
+                        for (box, confidence) in detections:
+                            x, y, w, h = box
+                            if self.lineaPos.get() == 'Vertical':
+                                if x < int(linea_deteccion1) < x + w:
+                                    self.paso_linea1 = 1
+                                    if self.paso_linea2 == 1:
+                                        self.paso_linea1 = 0
+                                        self.paso_linea2 = 0                    
+                                        self.insertar_registro()
+                                        self.count += 1
+
+                                if x < int(linea_deteccion2) < x + w:
+                                    self.paso_linea2 = 1
+                                    if self.paso_linea1 == 1:
+                                        self.paso_linea1 = 0
+                                        self.paso_linea2 = 0
+                                        self.insertar_registro()
+                                        self.count += 1
+                            else:
+                                if y < int(linea_deteccion1) < y + h:
+                                    self.paso_linea1 = 1
+                                    if self.paso_linea2 == 1:
+                                        self.paso_linea1 = 0
+                                        self.paso_linea2 = 0
+                                        self.insertar_registro()
+                                        self.count += 1
+                                if y < int(linea_deteccion2) < y + h:
+                                    self.paso_linea2 = 1
+                                    if self.paso_linea1 == 1:
+                                        self.paso_linea1 = 0
+                                        self.paso_linea2 = 0
+                                        self.insertar_registro()
+                                        self.count += 1
+                                
+                    self.detectar += 1
+                    if self.detectar == 10: self.detectar = 0
+
+                    if self.lineaPos.get() == 'Vertical':
+                        if self.paso_linea1 == 0: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 0, 255), 2)
+                        else: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 255, 0), 2)
+
+                        if self.paso_linea2 == 0: cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 0, 255), 2)
+                        else: cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 255, 0), 2)
+                    else:
+                        if self.paso_linea1 == 0: cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 0, 255), 2)
+                        else: cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 255, 0), 2)
+
+                        if self.paso_linea2 == 0: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 0, 255), 2)
+                        else: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)
 
                     cv2.putText(frame, f'Cantidad desde {self.fecha_hora}: {self.count}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
