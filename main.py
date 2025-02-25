@@ -408,14 +408,28 @@ class VentanaPrincipal(tk.Tk):
         self.linea2['values'] = ('10','50','100','150','200','250','300','350','400','450','500','550','600')
         self.linea2.current(9)
         self.linea2.grid(row=1, column=2, sticky="W", padx=10)
+        
+        self.frameLineaDatos2 = tk.Frame(self.frameDatos, bg="#fff8e6")
+        self.frameLineaDatos2.pack(expand=True, anchor="center")
 
-        self.lineaPos = ttk.Combobox(self.frameDatos, width=33, style="TCombobox")
+        self.lblLinea = tk.Label(self.frameLineaDatos2, text="Registra cuando pasa primero por:", bg="#fff8e6", fg="black", font=("Helvetica", 10))
+        self.lblLinea.grid(row=0, column=1, sticky="W", padx=10)
+
+        self.lineaOk = ttk.Combobox(self.frameLineaDatos2, width=33, style="TCombobox")
+        self.lineaOk['values'] = ('Linea 1','Linea 2')
+        self.lineaOk.current(0)
+        self.lineaOk.grid(row=1, column=1, sticky="W", padx=10)
+
+        self.lblLinea = tk.Label(self.frameLineaDatos2, text="Posición:", bg="#fff8e6", fg="black", font=("Helvetica", 10))
+        self.lblLinea.grid(row=0, column=2, sticky="W", padx=10)
+
+        self.lineaPos = ttk.Combobox(self.frameLineaDatos2, width=33, style="TCombobox")
         self.lineaPos['values'] = ('Horizontal','Vertical')
         self.lineaPos.current(0) 
-        self.lineaPos.pack(expand=True, anchor="center", pady=5)
+        self.lineaPos.grid(row=1, column=2, sticky="W", padx=10)
 
         self.frameBotDatos = tk.Frame(self.frameDatos, bg="#fff8e6")
-        self.frameBotDatos.pack(expand=True, anchor="center")
+        self.frameBotDatos.pack(expand=True, anchor="center",pady=5)
 
         self.botonVideo = tk.Button(self.frameBotDatos, text="Iniciar camara", cursor="hand2", bg="blue", fg="#fff8e6", command=self.validar_persona)
         self.botonVideo.grid(row=0, column=1, sticky="W", padx=10)
@@ -527,48 +541,47 @@ class VentanaPrincipal(tk.Tk):
                             if self.lineaPos.get() == 'Vertical':
                                 if x < int(linea_deteccion1) < x + w:
                                     self.paso_linea1 = 1
+                                    cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 255, 0), 2)
                                     if self.paso_linea2 == 1:
                                         self.paso_linea1 = 0
-                                        self.paso_linea2 = 0                    
-                                        self.insertar_registro()
-                                        self.count += 1
+                                        self.paso_linea2 = 0
+                                        if self.lineaOk.get() == 'Linea 2':
+                                            self.insertar_registro()
+                                            self.count += 1
+                                    break
                                 elif x < int(linea_deteccion2) < x + w:
                                     self.paso_linea2 = 1
+                                    cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 255, 0), 2)
                                     if self.paso_linea1 == 1:
                                         self.paso_linea1 = 0
-                                        self.paso_linea2 = 0
-                                        self.insertar_registro()
-                                        self.count += 1
-                                
-                                if self.paso_linea1 == 0: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 0, 255), 2)
-                                else: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 255, 0), 2)
-
-                                if self.paso_linea2 == 0: cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 0, 255), 2)
-                                else: cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 255, 0), 2)
+                                        if self.lineaOk.get() == 'Linea 1':
+                                            self.insertar_registro()
+                                            self.count += 1
+                                    break
                             else:
                                 if y < int(linea_deteccion1) < y + h:
                                     self.paso_linea1 = 1
+                                    cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 255, 0), 2)
                                     if self.paso_linea2 == 1:
                                         self.paso_linea1 = 0
                                         self.paso_linea2 = 0
-                                        self.insertar_registro()
-                                        self.count += 1
+                                        if self.lineaOk.get() == 'Linea 2':
+                                            self.insertar_registro()
+                                            self.count += 1
+                                    break
                                 elif y < int(linea_deteccion2) < y + h:
                                     self.paso_linea2 = 1
+                                    cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)
                                     if self.paso_linea1 == 1:
                                         self.paso_linea1 = 0
-                                        self.paso_linea2 = 0
-                                        self.insertar_registro()
-                                        self.count += 1
-                                if self.paso_linea1 == 0: cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 0, 255), 2)
-                                else: cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 255, 0), 2)
-
-                                if self.paso_linea2 == 0: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 0, 255), 2)
-                                else: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)
+                                        if self.lineaOk.get() == 'Linea 1':
+                                            self.insertar_registro()
+                                            self.count += 1
+                                    break
 
                     self.detectar += 1
                     if self.detectar == 10: self.detectar = 0
-
+                    
                     if self.lineaPos.get() == 'Vertical':
                         if self.paso_linea1 == 0: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 0, 255), 2)
                         else: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 255, 0), 2)
@@ -580,9 +593,9 @@ class VentanaPrincipal(tk.Tk):
                         else: cv2.line(frame, (0, int(linea_deteccion1)), (frame.shape[1], int(linea_deteccion1)), (0, 255, 0), 2)
 
                         if self.paso_linea2 == 0: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 0, 255), 2)
-                        else: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)
+                        else: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)      
 
-                    cv2.putText(frame, f'Cantidad desde {self.fecha_hora}: {self.count}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.putText(frame, f'Cantidad desde {self.fecha_hora}: {self.count}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     frame = cv2.resize(frame, (self.anchoVideo, self.altoVideo))
                     self.img = ImageTk.PhotoImage(Image.fromarray(frame))
