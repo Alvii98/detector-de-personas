@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 import locale
 import threading
-import pandas as pd # pandas y openpyxl
+import pandas as pd # openpyxl y pandas
 import sqlite3
 import re
 import ctypes
