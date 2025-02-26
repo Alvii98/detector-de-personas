@@ -30,7 +30,7 @@ class VentanaPrincipal(tk.Tk):
             ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable.replace("python.exe", "pythonw.exe"), params, None, 1)
             sys.exit()  
         
-        self.title("Contador de personas 2.2")
+        self.title("Contador de personas 3.0")
         self.ancho = 880
         self.alto = 580
         self.anchoVideo = 620
