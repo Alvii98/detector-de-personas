@@ -61,6 +61,7 @@ class VentanaPrincipal(tk.Tk):
         self.outs = None
         self.classes = None
         self.detectar = 0
+        self.sindetectar = 0
         self.paso_linea1 = 0
         self.paso_linea2 = 0
         threading.Thread(target=self.cargar_lib).start()
@@ -538,6 +539,7 @@ class VentanaPrincipal(tk.Tk):
                         detections = self.detect_people(frame)
                         for (box, confidence) in detections:
                             x, y, w, h = box
+                            self.sindetectar = 0
                             if self.lineaPos.get() == 'Vertical':
                                 if x < int(linea_deteccion1) < x + w:
                                     self.paso_linea1 = 1
@@ -554,6 +556,7 @@ class VentanaPrincipal(tk.Tk):
                                     cv2.line(frame, (int(linea_deteccion2), 0), (int(linea_deteccion2), frame.shape[0]), (0, 255, 0), 2)
                                     if self.paso_linea1 == 1:
                                         self.paso_linea1 = 0
+                                        self.paso_linea2 = 0
                                         if self.lineaOk.get() == 'Linea 1':
                                             self.insertar_registro()
                                             self.count += 1
@@ -574,13 +577,21 @@ class VentanaPrincipal(tk.Tk):
                                     cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)
                                     if self.paso_linea1 == 1:
                                         self.paso_linea1 = 0
+                                        self.paso_linea2 = 0
                                         if self.lineaOk.get() == 'Linea 1':
                                             self.insertar_registro()
                                             self.count += 1
                                     break
+                        else:
+                            self.sindetectar += 1
 
                     self.detectar += 1
-                    if self.detectar == 10: self.detectar = 0
+                    if self.detectar == 8: self.detectar = 0
+
+                    if self.sindetectar == 5: 
+                        self.sindetectar = 0
+                        self.paso_linea1 = 0
+                        self.paso_linea2 = 0
                     
                     if self.lineaPos.get() == 'Vertical':
                         if self.paso_linea1 == 0: cv2.line(frame, (int(linea_deteccion1), 0), (int(linea_deteccion1), frame.shape[0]), (0, 0, 255), 2)
@@ -595,7 +606,7 @@ class VentanaPrincipal(tk.Tk):
                         if self.paso_linea2 == 0: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 0, 255), 2)
                         else: cv2.line(frame, (0, int(linea_deteccion2)), (frame.shape[1], int(linea_deteccion2)), (0, 255, 0), 2)      
 
-                    cv2.putText(frame, f'Cantidad desde {self.fecha_hora}: {self.count}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
+                    cv2.putText(frame, f'Cantidad desde {self.fecha_hora}: {self.count}', (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.8, (0, 0, 0), 2, cv2.LINE_AA)
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     frame = cv2.resize(frame, (self.anchoVideo, self.altoVideo))
                     self.img = ImageTk.PhotoImage(Image.fromarray(frame))
